@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Planner with Alarm</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 250vh;
+      background-color: #f4f4f9;
+    }
+
+    .container {
+      width: 400px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .hour-block {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .hour-label {
+      width: 60px;
+    }
+
+    textarea {
+      flex: 1;
+      padding: 8px;
+      resize: none;
+    }
+
+    .save-btn,
+    .alarm-set {
+      margin-left: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .save-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .alarm-set {
+      background: #007bff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Planner with Alarm</h1>
+    <div id="planner"></div>
+  </div>
+
+  <script>
+    // Generate hourly time blocks
+    function generatePlanner() {
+      const planner = document.getElementById('planner');
+      const hours = Array.from({ length: 24 }, (_, i) => i); // 24-hour format
+
+      hours.forEach(hour => {
+        const hourBlock = document.createElement('div');
+        hourBlock.classList.add('hour-block');
+
+        // Hour label
+        const label = document.createElement('span');
+        label.classList.add('hour-label');
+        label.innerText = `${hour}:00`;
+
+        // Text area for task input
+        const textArea = document.createElement('textarea');
+        textArea.value = localStorage.getItem(`task-${hour}`) || ''; // Load saved task
+
+        // Save button
+        const saveButton = document.createElement('button');
+        saveButton.classList.add('save-btn');
+        saveButton.innerText = 'Save';
+        saveButton.onclick = () => saveTask(hour, textArea.value);
+
+        // Set Alarm button
+        const alarmButton = document.createElement('button');
+        alarmButton.classList.add('alarm-set');
+        alarmButton.innerText = 'Set Alarm';
+        alarmButton.onclick = () => setAlarm(hour, textArea.value);
+
+        hourBlock.appendChild(label);
+        hourBlock.appendChild(textArea);
+        hourBlock.appendChild(saveButton);
+        hourBlock.appendChild(alarmButton);
+
+        planner.appendChild(hourBlock);
+      });
+    }
+
+    // Save task to localStorage
+    function saveTask(hour, task) {
+      localStorage.setItem(`task-${hour}`, task);
+      alert(`Task for ${hour}:00 saved!`);
+    }
+
+    // Set an alarm for the specific hour
+    function setAlarm(hour, task) {
+      const now = new Date();
+      const alarmTime = new Date();
+      alarmTime.setHours(hour, 0, 0, 0); // Set alarm to the selected hour
+
+      const timeDifference = alarmTime - now;
+
+      if (timeDifference > 0) {
+        setTimeout(() => {
+          alert(`Alarm for ${hour}:00 - ${task || 'No task specified'}`);
+        }, timeDifference);
+
+        alert(`Alarm set for ${hour}:00`);
+      } else {
+        alert(`Cannot set an alarm for a past time.`);
+      }
+    }
+
+    // Initialize planner on page load
+    document.addEventListener('DOMContentLoaded', generatePlanner);
+  </script>
+</body>
+</html>

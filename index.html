@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        header {
+            text-align: center;
+            background: #333;
+            color: white;
+            padding: 1rem 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .hour-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        .hour-block:last-child {
+            border-bottom: none;
+        }
+        .hour {
+            flex: 0 0 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .task {
+            flex: 1;
+            margin: 0 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .task.past {
+            background: #f0f0f0;
+        }
+        .task.present {
+            background: #ffefcc;
+        }
+        .task.future {
+            background: #d4f8d4;
+        }
+        .save-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-btn:hover {
+            background: #0056b3;
+        }
+        .popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Daily Planner</h1>
+        <p id="current-date"></p>
+    </header>
+
+    <div class="container" id="planner"></div>
+
+    <div class="popup" id="popup">Task saved successfully!</div>
+
+    <script>
+        const planner = document.getElementById('planner');
+        const currentDateElem = document.getElementById('current-date');
+        const popup = document.getElementById('popup');
+        const currentHour = new Date().getHours();
+
+        // Update current date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        currentDateElem.textContent = new Date().toLocaleDateString(undefined, options);
+
+        // Initialize planner hours
+        const hours = Array.from({ length: 24 }, (_, i) => i);
+
+        // Load tasks from localStorage
+        const savedTasks = JSON.parse(localStorage.getItem('dailyPlanner')) || {};
+
+        // Generate planner blocks
+        hours.forEach(hour => {
+            const hourBlock = document.createElement('div');
+            hourBlock.className = 'hour-block';
+
+            const hourLabel = document.createElement('div');
+            hourLabel.className = 'hour';
+            hourLabel.textContent = `${hour < 10 ? '0' : ''}${hour}:00`;
+
+            const taskInput = document.createElement('input');
+            taskInput.type = 'text';
+            taskInput.className = `task ${hour < currentHour ? 'past' : hour === currentHour ? 'present' : 'future'}`;
+            taskInput.value = savedTasks[hour] || '';
+            taskInput.dataset.hour = hour;
+
+            const saveButton = document.createElement('button');
+            saveButton.className = 'save-btn';
+            saveButton.textContent = 'Save';
+            saveButton.onclick = () => saveTask(hour, taskInput.value);
+
+            hourBlock.appendChild(hourLabel);
+            hourBlock.appendChild(taskInput);
+            hourBlock.appendChild(saveButton);
+            planner.appendChild(hourBlock);
+        });
+
+        // Save task to localStorage and show popup
+        function saveTask(hour, task) {
+            savedTasks[hour] = task;
+            localStorage.setItem('dailyPlanner', JSON.stringify(savedTasks));
+            showPopup('Task saved successfully!');
+        }
+
+        // Show popup notification
+        function showPopup(message) {
+            popup.textContent = message;
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
